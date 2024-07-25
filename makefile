@@ -1,20 +1,19 @@
 CC = g++
-CFLAGS =  -std=c++17 -g
-BUILD_DIR = build
+CFLAGS =  -std=c++11
+BUILD_DIR = ../
 OUTPUT_DIR = output
 SRC_DIR = src
 SRC = $(SRC_DIR)/*.cpp
-TARGET = main
+TARGET = project2.out
 
 clear-build-run: clearOutput clear build run
 
 clear:
-	@echo "Clearing $(BUILD_DIR) directory..."
-	@rm -rf $(BUILD_DIR)
+	@echo "Clearing target file..."
+	@rm -f TARGET
 build:
 	@echo "Building $(TARGET)..."
-	@mkdir -p $(BUILD_DIR)
-	@$(CC) $(CFLAGS) $(SRC) -o $(BUILD_DIR)/$(TARGET)
+	@$(CC) $(CFLAGS) $(SRC) -o $(TARGET)
 run: build
 	@echo "Running $(TARGET)...\n"
 	@./$(BUILD_DIR)/$(TARGET)

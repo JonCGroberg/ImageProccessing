@@ -11,30 +11,14 @@ using namespace std;
 
 // Multiply the images together
 void part1() {
-  string outputFilePath = "output/part1.tga";
-  string inputDir = "input/";
-
-  string topFilePath = inputDir + "layer1.tga";
-  string bottomFilePath = inputDir + "pattern1.tga";
-
-  ImageTGA topImage(topFilePath);
-  ImageTGA bottomImage(bottomFilePath);
+  ImageTGA topImage("input/layer1.tga");
+  ImageTGA bottomImage("input/pattern1.tga");
   ImageTGA outputImage;
-
-  // cout << "InputTGA Top: " << topFilePath << endl;
-  // topImage.print();
-  // cout << "InputTGA Bottom: " << bottomFilePath << endl;
-  // topImage.print();
-
-  // cout << "\nMultiplying images..." << endl;
   outputImage = topImage.multiply(bottomImage);
 
-  // cout << "Writing output image..." << endl;
-  ofstream outputImageStream(outputFilePath, ios::binary);
-  outputImage.write(outputImageStream);
-
-  cout << "Output TGA: " << outputFilePath << endl;
-  // outputImage.print();
+  outputImage.write("output/part1.tga");
+  cout << "Output TGA: "
+       << "output/part1.tga" << endl;
 }
 void part2() {
   string outputFilePath = "output/part2.tga";
@@ -137,8 +121,34 @@ void part10() {
        << "output/part10.tga" << endl;
 }
 
-void tests(){
+void tests() {
+  string resultImages[] = {
+      "output/part1.tga",   "output/part2.tga",   "output/part3.tga",
+      "output/part4.tga",   "output/part5.tga",   "output/part6.tga",
+      "output/part7.tga",   "output/part8_r.tga", "output/part8_g.tga",
+      "output/part8_b.tga", "output/part9.tga",   "output/part10.tga",
+  };
+  string expectedImages[] = {
+      "examples/EXAMPLE_part1.tga",   "examples/EXAMPLE_part2.tga",
+      "examples/EXAMPLE_part3.tga",   "examples/EXAMPLE_part4.tga",
+      "examples/EXAMPLE_part5.tga",   "examples/EXAMPLE_part6.tga",
+      "examples/EXAMPLE_part7.tga",   "examples/EXAMPLE_part8_r.tga",
+      "examples/EXAMPLE_part8_g.tga", "examples/EXAMPLE_part8_b.tga",
+      "examples/EXAMPLE_part9.tga",   "examples/EXAMPLE_part10.tga",
+  };
 
+  int count = 0;
+  for (int i = 0; i < 11; i++) {
+    ImageTGA resultImage(resultImages[i]);
+    ImageTGA expectedImage(expectedImages[i]);
+    if (resultImage == expectedImage) {
+      cout << "Test " << resultImages[i] << " passed" << endl;
+      count++;
+    } else {
+      cout << "Test " << resultImages[i] << " failed" << endl;
+    }
+  }
+  cout << "--- "<< count-1 << " out of 10 tests passed ---" << endl;
 }
 
 int main() {
@@ -162,9 +172,9 @@ int main() {
   part9();
   cout << "--- Running part 10 ---" << endl;
   part10();
-  cout << "--- Done ---" << endl;
 
-  cout << "Running Tests" << endl;
+  cout << "\n--- Running Tests ---" << endl;
+  tests();
 
   return 0;
 }

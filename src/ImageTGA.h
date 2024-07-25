@@ -25,11 +25,29 @@ struct Pixel {
   unsigned char green; // 1 byte
   unsigned char blue;  // 1 byte
 
+  bool operator==(const Pixel &otherPixel) const {
+    bool validRed = red == otherPixel.red;
+    bool validGreen = green == otherPixel.green;
+    bool validBlue = blue == otherPixel.blue;
+
+    if (!validRed || !validGreen || !validBlue) {
+      cout << "\tPixel mismatch: " << (int)red << " " << (int)green << " "
+           << (int)blue << " != " << (int)otherPixel.red << " "
+           << (int)otherPixel.green << " " << (int)otherPixel.blue << endl;
+    }
+
+    return validRed && validGreen && validBlue;
+  }
+
+  bool operator!=(const Pixel &otherPixel) const {
+    return !(*this == otherPixel);
+  }
+
   Pixel operator*(const Pixel &otherPixel) const {
     Pixel result;
-    result.red = clamp((int(red) * int(otherPixel.red)) / 255);
-    result.green = clamp((int(green) * int(otherPixel.green)) / 255);
-    result.blue = clamp((int(blue) * int(otherPixel.blue)) / 255);
+    result.red = clamp(((int(red) * int(otherPixel.red)) / 255.0f));
+    result.green = clamp(((int(green) * int(otherPixel.green)) / 255.0f));
+    result.blue = clamp(((int(blue) * int(otherPixel.blue)) / 255.0f));
     return result;
   }
 
@@ -51,31 +69,43 @@ struct Pixel {
 
   Pixel overlay(const Pixel &otherPixel) const {
     Pixel result;
-    if (red < 128) {
-      result.red = (2 * red * otherPixel.red) / 255;
-    } else {
-      result.red = 255 - 2 * (255 - red) * (255 - otherPixel.red) / 255;
-    }
-    if (green < 128) {
-      result.green = (2 * green * otherPixel.green) / 255;
-    } else {
-      result.green = 255 - 2 * (255 - green) * (255 - otherPixel.green) / 255;
-    }
-    if (blue < 128) {
-      result.blue = (2 * blue * otherPixel.blue) / 255;
-    } else {
-      result.blue = 255 - 2 * (255 - blue) * (255 - otherPixel.blue) / 255;
-    }
-    return result;
-  }
 
-  Pixel screen(const Pixel &otherPixel) const {
-    Pixel result;
-    result.red = 255 - (255 - red) * (255 - otherPixel.red) / 255;
-    result.green = 255 - (255 - green) * (255 - otherPixel.green) / 255;
-    result.blue = 255 - (255 - blue) * (255 - otherPixel.blue) / 255;
+    // Red channel
+    if (red < 128) {
+      result.red = clamp((2 * red * otherPixel.red) / 255.0f + 0.0f);
+    } else {
+      result.red = clamp(
+          255.0f - (2 * (255.0f - red) * (255.0f - otherPixel.red) / 255.0f) +
+          0.0f);
+    }
+
+    // Green channel
+    if (green < 128) {
+      result.green = clamp((2 * green * otherPixel.green) / 255.0f + 0.0f);
+    } else {
+      result.green = clamp(
+          255.0f -
+          (2 * (255.0f - green) * (255.0f - otherPixel.green) / 255.0f) + 0.0f);
+    }
+
+    // Blue channel
+    if (blue < 128) {
+      result.blue = clamp((2 * blue * otherPixel.blue) / 255.0f + 0.0f);
+    } else {
+      result.blue = clamp(
+          255.0f - (2 * (255.0f - blue) * (255.0f - otherPixel.blue) / 255.0f) +
+          0.0f);
+    }
+
     return result;
   }
+   Pixel screen(const Pixel& otherPixel) const {
+        Pixel result;
+        result.red = clamp(255 - ((255 - red) * (255 - otherPixel.red) / 255.0f) + 0.0f);
+        result.green = clamp(255 - ((255 - green) * (255 - otherPixel.green) / 255.0f) + 0.0f);
+        result.blue = clamp(255 - ((255 - blue) * (255 - otherPixel.blue) / 255.0f) + 0.0f);
+        return result;
+    }
 
   void scale(int r, int g, int b) {
     red = clamp((red * r));
@@ -83,12 +113,12 @@ struct Pixel {
     blue = clamp((blue * b));
   }
 
-  static unsigned char clamp(int channelValue) {
+  static unsigned char clamp(float channelValue) {
     int max = 255;
     int min = 0;
     channelValue = channelValue < min ? min : channelValue;
     channelValue = channelValue > max ? max : channelValue;
-    return (unsigned char)(channelValue);
+    return static_cast<unsigned char>(channelValue + 0.5f);
   }
 };
 
@@ -99,6 +129,15 @@ struct ImageTGA {
   short height;
   ImageTGA(string filePath) { read(filePath); }
   ImageTGA() {}
+
+  bool operator==(const ImageTGA &otherImage) const {
+    if (pixels.size() != otherImage.pixels.size())
+      return false;
+    for (unsigned int i = 0; i < pixels.size(); i++)
+      if (pixels[i] != otherImage.pixels[i])
+        return false;
+    return true;
+  }
 
   ImageTGA add(ImageTGA &otherImage) {
     for (unsigned int i = 0; i < pixels.size(); i++)
