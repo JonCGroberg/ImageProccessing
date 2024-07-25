@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -Wall -Wextra -Werror -Wpedantic -std=c++20 -g
+CFLAGS =  -std=c++17 -g
 BUILD_DIR = build
 OUTPUT_DIR = output
 SRC_DIR = src

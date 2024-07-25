@@ -1,90 +1,15 @@
+#include "ImageTGA.h"
 #include <fstream>
 #include <iostream>
+#include <ostream>
+#include <string>
 #include <utility>
 #include <vector>
 using namespace std;
 // 24-bit true color, uncompressed TGA
 // https://en.wikipedia.org/wiki/Truevision_TGA
 
-struct Header {
-  char idLength;        // 1 byte
-  char colorMapType;    // 1 byte
-  char imageType;       // 1 byte
-  short colorMapOrigin; // 2 bytes
-  short colorMapLength; // 2 bytes
-  char colorMapDepth;   // 1 byte
-  short xOrigin;        // 2 bytes
-  short yOrigin;        // 2 bytes
-  short width;          // 2 bytes:
-  short height;         // 2 bytes
-  char bitsPerPixel;    // 1 byte
-  char imageDescriptor; // 1 byte
-};
-struct Pixel {
-  unsigned char red;   // 1 byte
-  unsigned char green; // 1 byte
-  unsigned char blue;  // 1 byte
-};
-
-// Read the dimensions of the image
-Header readHeader(ifstream &file) {
-  Header header;
-  file.read(&header.idLength, sizeof(header.idLength));
-  file.read(&header.colorMapType, sizeof(header.colorMapType));
-  file.read(&header.imageType, sizeof(header.imageType));
-  file.read(reinterpret_cast<char *>(&header.colorMapOrigin),
-            sizeof(header.colorMapOrigin));
-  file.read(reinterpret_cast<char *>(&header.colorMapLength),
-            sizeof(header.colorMapLength));
-  file.read(reinterpret_cast<char *>(&header.colorMapDepth),
-            sizeof(header.colorMapDepth));
-  file.read(reinterpret_cast<char *>(&header.xOrigin), sizeof(header.xOrigin));
-  file.read(reinterpret_cast<char *>(&header.yOrigin), sizeof(header.yOrigin));
-  file.read(reinterpret_cast<char *>(&header.width), sizeof(header.width));
-  file.read(reinterpret_cast<char *>(&header.height), sizeof(header.height));
-  file.read(&header.bitsPerPixel, sizeof(header.bitsPerPixel));
-  file.read(&header.imageDescriptor, sizeof(header.imageDescriptor));
-  return header;
-}
-void writeHeader(ofstream &file, Header header) {
-  file.write(&header.idLength, sizeof(header.idLength));
-  file.write(&header.colorMapType, sizeof(header.colorMapType));
-  file.write(&header.imageType, sizeof(header.imageType));
-  file.write(reinterpret_cast<char *>(&header.colorMapOrigin),
-             sizeof(header.colorMapOrigin));
-  file.write(reinterpret_cast<char *>(&header.colorMapLength),
-             sizeof(header.colorMapLength));
-  file.write(reinterpret_cast<char *>(&header.colorMapDepth),
-             sizeof(header.colorMapDepth));
-  file.write(reinterpret_cast<char *>(&header.xOrigin), sizeof(header.xOrigin));
-  file.write(reinterpret_cast<char *>(&header.yOrigin), sizeof(header.yOrigin));
-  file.write(reinterpret_cast<char *>(&header.width), sizeof(header.width));
-  file.write(reinterpret_cast<char *>(&header.height), sizeof(header.height));
-  file.write(&header.bitsPerPixel, sizeof(header.bitsPerPixel));
-  file.write(&header.imageDescriptor, sizeof(header.imageDescriptor));
-}
-// Read the image data
-vector<Pixel> readData(ifstream &file, short &width, short &height) {
-  vector<Pixel> pixels(width * height);
-  for (int i = 0; i < width * height; i++) {
-    Pixel pixel;
-    file.read(reinterpret_cast<char *>(&pixel.blue), sizeof(pixel.blue));
-    file.read(reinterpret_cast<char *>(&pixel.green), sizeof(pixel.green));
-    file.read(reinterpret_cast<char *>(&pixel.red), sizeof(pixel.red));
-    pixels[i] = pixel;
-  }
-  return pixels;
-}
-void writeData(ofstream &file, vector<Pixel> pixels) {
-  for (unsigned int i = 0; i < pixels.size(); i++) {
-    file.write(reinterpret_cast<char *>(&pixels[i].blue),
-               sizeof(pixels[i].blue));
-    file.write(reinterpret_cast<char *>(&pixels[i].green),
-               sizeof(pixels[i].green));
-    file.write(reinterpret_cast<char *>(&pixels[i].red), sizeof(pixels[i].red));
-  }
-}
-
+// Multiply the images together
 void part1() {
   string outputFilePath = "output/part1.tga";
   string inputDir = "input/";
@@ -92,28 +17,154 @@ void part1() {
   string topFilePath = inputDir + "layer1.tga";
   string bottomFilePath = inputDir + "pattern1.tga";
 
-  ifstream topFile(topFilePath, ios::binary);
-  ofstream outputFile(outputFilePath, ios::binary);
+  ImageTGA topImage(topFilePath);
+  ImageTGA bottomImage(bottomFilePath);
+  ImageTGA outputImage;
 
-  Header header = readHeader(topFile);
-  vector<Pixel> pixels = readData(topFile, header.width, header.height);
+  // cout << "InputTGA Top: " << topFilePath << endl;
+  // topImage.print();
+  // cout << "InputTGA Bottom: " << bottomFilePath << endl;
+  // topImage.print();
 
-  cout << "Width: " << header.width << endl;
-  cout << "Height: " << header.height << endl;
-  cout << "Number of pixels: " << pixels.size() << endl;
+  // cout << "\nMultiplying images..." << endl;
+  outputImage = topImage.multiply(bottomImage);
 
+  // cout << "Writing output image..." << endl;
+  ofstream outputImageStream(outputFilePath, ios::binary);
+  outputImage.write(outputImageStream);
 
+  cout << "Output TGA: " << outputFilePath << endl;
+  // outputImage.print();
+}
+void part2() {
+  string outputFilePath = "output/part2.tga";
+  string inputDir = "input/";
 
+  string topFilePath = inputDir + "layer2.tga";
+  string bottomFilePath = inputDir + "car.tga";
 
-  cout << "\n Copying File from " << topFilePath << " to " << outputFilePath
-       << endl;
-  writeHeader(outputFile, header);
-  writeData(outputFile, pixels);
+  ImageTGA topImage(topFilePath);
+  ImageTGA bottomImage(bottomFilePath);
+  ImageTGA outputImage = topImage.subtract(bottomImage);
+
+  outputImage.write(outputFilePath);
+  cout << "Output TGA: " << outputFilePath << endl;
+  // outputImage.print();
+}
+void part3() {
+  ImageTGA topImage("input/layer1.tga");
+  ImageTGA bottomImage("input/pattern2.tga");
+  ImageTGA textImage("input/text.tga");
+  ImageTGA compositeImage = topImage.multiply(bottomImage);
+  ImageTGA outputImage = textImage.screen(compositeImage);
+
+  outputImage.write("output/part3.tga");
+  cout << "Output TGA: "
+       << "output/part3.tga" << endl;
+}
+void part4() {
+  ImageTGA layer2("input/layer2.tga");
+  ImageTGA circles("input/circles.tga");
+  ImageTGA pattern2("input/pattern2.tga");
+
+  ImageTGA compositeImage = layer2.multiply(circles);
+  ImageTGA outputImage = pattern2.subtract(compositeImage);
+  outputImage.write("output/part4.tga");
+  cout << "Output TGA: "
+       << "output/part4.tga" << endl;
+}
+void part5() {
+  ImageTGA layer1("input/layer1.tga");
+  ImageTGA pattern1("input/pattern1.tga");
+
+  ImageTGA outputImage = layer1.overlay(pattern1);
+  outputImage.write("output/part5.tga");
+  cout << "Output TGA: "
+       << "output/part5.tga" << endl;
+}
+void part6() {
+  ImageTGA car("input/car.tga");
+  Pixel green200 = {0, 200, 0};
+  car.add(green200);
+
+  car.write("output/part6.tga");
+  cout << "Output TGA: "
+       << "output/part6.tga" << endl;
+}
+void part7() {
+  ImageTGA car("input/car.tga");
+  car.scale(4, 1, 0);
+
+  car.write("output/part7.tga");
+  cout << "Output TGA: "
+       << "output/part7.tga" << endl;
+}
+void part8() {
+  ImageTGA car("input/car.tga");
+  ImageTGA redChannel = car.getRedChannel();
+  ImageTGA greenChannel = car.getGreenChannel();
+  ImageTGA blueChannel = car.getBlueChannel();
+
+  redChannel.write("output/part8_r.tga");
+  greenChannel.write("output/part8_g.tga");
+  blueChannel.write("output/part8_b.tga");
+
+  cout << "Output TGA: "
+       << "output/part8_r.tga" << endl;
+  cout << "Output TGA: "
+       << "output/part8_g.tga" << endl;
+  cout << "Output TGA: "
+       << "output/part8_b.tga" << endl;
+}
+void part9() {
+  ImageTGA redChannel("input/layer_red.tga");
+  ImageTGA greenChannel("input/layer_green.tga");
+  ImageTGA blueChannel("input/layer_blue.tga");
+  ImageTGA outputImage = redChannel;
+
+  outputImage.setGreenChannel(greenChannel);
+  outputImage.setBlueChannel(blueChannel);
+
+  outputImage.write("output/part9.tga");
+  cout << "Output TGA: "
+       << "output/part9.tga" << endl;
+}
+void part10() {
+  ImageTGA text2Image("input/text2.tga");
+  text2Image.rotate180Degrees();
+  text2Image.write("output/part10.tga");
+  cout << "Output TGA: "
+       << "output/part10.tga" << endl;
+}
+
+void tests(){
+
 }
 
 int main() {
   cout << "--- Running part 1 ---" << endl;
   part1();
+  cout << "--- Running part 2 ---" << endl;
+  part2();
+  cout << "--- Running part 3 ---" << endl;
+  part3();
+  cout << "--- Running part 4 ---" << endl;
+  part4();
+  cout << "--- Running part 5 ---" << endl;
+  part5();
+  cout << "--- Running part 6 ---" << endl;
+  part6();
+  cout << "--- Running part 7 ---" << endl;
+  part7();
+  cout << "--- Running part 8 ---" << endl;
+  part8();
+  cout << "--- Running part 9 ---" << endl;
+  part9();
+  cout << "--- Running part 10 ---" << endl;
+  part10();
+  cout << "--- Done ---" << endl;
+
+  cout << "Running Tests" << endl;
 
   return 0;
 }
