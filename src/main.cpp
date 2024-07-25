@@ -120,25 +120,36 @@ void part10() {
   cout << "Output TGA: "
        << "output/part10.tga" << endl;
 }
+void extraCredit() {
+  ImageTGA car("input/car.tga");
+  ImageTGA circles("input/circles.tga");
+  ImageTGA pattern1("input/pattern1.tga");
+  ImageTGA text("input/text.tga");
+  ImageTGA outputImage;
+
+  outputImage.combineImages(text,pattern1,car,circles);
+  outputImage.write("output/extracredit.tga");
+}
 
 void tests() {
-  string resultImages[] = {
-      "output/part1.tga",   "output/part2.tga",   "output/part3.tga",
-      "output/part4.tga",   "output/part5.tga",   "output/part6.tga",
-      "output/part7.tga",   "output/part8_r.tga", "output/part8_g.tga",
-      "output/part8_b.tga", "output/part9.tga",   "output/part10.tga",
-  };
-  string expectedImages[] = {
-      "examples/EXAMPLE_part1.tga",   "examples/EXAMPLE_part2.tga",
-      "examples/EXAMPLE_part3.tga",   "examples/EXAMPLE_part4.tga",
-      "examples/EXAMPLE_part5.tga",   "examples/EXAMPLE_part6.tga",
-      "examples/EXAMPLE_part7.tga",   "examples/EXAMPLE_part8_r.tga",
-      "examples/EXAMPLE_part8_g.tga", "examples/EXAMPLE_part8_b.tga",
-      "examples/EXAMPLE_part9.tga",   "examples/EXAMPLE_part10.tga",
-  };
+  const int numOfImages = 12;
+  string resultImages[numOfImages+1] = {
+      "output/part1.tga",      "output/part2.tga",   "output/part3.tga",
+      "output/part4.tga",      "output/part5.tga",   "output/part6.tga",
+      "output/part7.tga",      "output/part8_r.tga", "output/part8_g.tga",
+      "output/part8_b.tga",    "output/part9.tga",   "output/part10.tga",
+      "output/extracredit.tga"};
+  string expectedImages[numOfImages+1] = {
+      "examples/EXAMPLE_part1.tga",      "examples/EXAMPLE_part2.tga",
+      "examples/EXAMPLE_part3.tga",      "examples/EXAMPLE_part4.tga",
+      "examples/EXAMPLE_part5.tga",      "examples/EXAMPLE_part6.tga",
+      "examples/EXAMPLE_part7.tga",      "examples/EXAMPLE_part8_r.tga",
+      "examples/EXAMPLE_part8_g.tga",    "examples/EXAMPLE_part8_b.tga",
+      "examples/EXAMPLE_part9.tga",      "examples/EXAMPLE_part10.tga",
+      "examples/EXAMPLE_extracredit.tga"};
 
   int count = 0;
-  for (int i = 0; i < 11; i++) {
+  for (int i = 0; i < numOfImages+1; i++) {
     ImageTGA resultImage(resultImages[i]);
     ImageTGA expectedImage(expectedImages[i]);
     if (resultImage == expectedImage) {
@@ -148,7 +159,8 @@ void tests() {
       cout << "Test " << resultImages[i] << " failed" << endl;
     }
   }
-  cout << "--- "<< count-1 << " out of 10 tests passed ---" << endl;
+  cout << "--- " << count - 1 << " out of " << numOfImages
+       << " tests passed ---" << endl;
 }
 
 int main() {
@@ -172,6 +184,8 @@ int main() {
   part9();
   cout << "--- Running part 10 ---" << endl;
   part10();
+  cout << "--- Running Extra Credit ---" << endl;
+  extraCredit();
 
   cout << "\n--- Running Tests ---" << endl;
   tests();

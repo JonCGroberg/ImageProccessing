@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <ostream>
@@ -99,13 +100,16 @@ struct Pixel {
 
     return result;
   }
-   Pixel screen(const Pixel& otherPixel) const {
-        Pixel result;
-        result.red = clamp(255 - ((255 - red) * (255 - otherPixel.red) / 255.0f) + 0.0f);
-        result.green = clamp(255 - ((255 - green) * (255 - otherPixel.green) / 255.0f) + 0.0f);
-        result.blue = clamp(255 - ((255 - blue) * (255 - otherPixel.blue) / 255.0f) + 0.0f);
-        return result;
-    }
+  Pixel screen(const Pixel &otherPixel) const {
+    Pixel result;
+    result.red =
+        clamp(255 - ((255 - red) * (255 - otherPixel.red) / 255.0f) + 0.0f);
+    result.green =
+        clamp(255 - ((255 - green) * (255 - otherPixel.green) / 255.0f) + 0.0f);
+    result.blue =
+        clamp(255 - ((255 - blue) * (255 - otherPixel.blue) / 255.0f) + 0.0f);
+    return result;
+  }
 
   void scale(int r, int g, int b) {
     red = clamp((red * r));
@@ -315,6 +319,56 @@ struct ImageTGA {
                  sizeof(pixels[i].green));
       file.write(reinterpret_cast<char *>(&pixels[i].red),
                  sizeof(pixels[i].red));
+    }
+  }
+  void setPixel(int x, int y, Pixel pixel) {
+    if (x >= 0 && x < width && y >= 0 && y < height) {
+      pixels[y * width + x] = pixel;
+    }
+  }
+
+  Pixel getPixel(int x, int y) const {
+    if (x >= 0 && x < width && y >= 0 && y < height) {
+      return pixels[y * width + x];
+    }
+    return (Pixel){0, 0, 0}; // Return black if out of bounds
+  }
+  void combineImages(ImageTGA &img1, ImageTGA &img2, ImageTGA &img3,
+                     ImageTGA &img4) {
+
+    header = img1.header;
+    header.width = img1.width * 2;
+    header.height = img1.height * 2;
+    pixels.resize(header.width * header.height);
+    width = header.width;
+    height = header.height;
+
+    // Copy img1 to top-left
+    for (int y = 0; y < img1.height; ++y) {
+      for (int x = 0; x < img1.width; ++x) {
+        setPixel(x, y, img1.getPixel(x, y));
+      }
+    }
+
+    // Copy img2 to top-right
+    for (int y = 0; y < img2.height; ++y) {
+      for (int x = 0; x < img2.width; ++x) {
+        setPixel(x + width / 2, y, img2.getPixel(x, y));
+      }
+    }
+
+    // Copy img3 to bottom-left
+    for (int y = 0; y < img3.height; ++y) {
+      for (int x = 0; x < img3.width; ++x) {
+        setPixel(x, y + height / 2, img3.getPixel(x, y));
+      }
+    }
+
+    // Copy img4 to bottom-right
+    for (int y = 0; y < img4.height; ++y) {
+      for (int x = 0; x < img4.width; ++x) {
+        setPixel(x + width / 2, y + height / 2, img4.getPixel(x, y));
+      }
     }
   }
 };
