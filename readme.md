@@ -2,42 +2,38 @@
 
 This C++ library provides a comprehensive set of tools for working with Truevision TGA (Targa) images in the 24-bit true color, uncompressed format. The library simplifies common image processing tasks such as loading, saving, manipulating pixels, applying blending modes, and extracting color channels.
 
-## Features
-
-- **Image Input/Output:**
-  - Read and write TGA images from files
-- **Pixel Manipulation:**
-  - Add, subtract, multiply, and scale pixel values
-  - Clamp pixel values within the valid range
-- **Image Operations:**
-  - Add, subtract, multiply, and scale images
-  - Apply blending modes like screen and overlay
-  - Extract red, green, and blue color channels
-  - Combine multiple images into a single output
-  - Rotate images by 180 degrees
-- **Testing:**
-  - Built-in test suite to verify results against expected outputs
 
 ## Usage
 
-1. **Include Header File:**
-
-   ```c++
-   #include "ImageTGA.h"
-   ```
-
-2. **Create ImageTGA Objects:**
+1. **Create ImageTGA Objects:**
 
    ```c++
    ImageTGA image1("input/image1.tga");
    ImageTGA image2("input/image2.tga");
    ```
 
-3. **Perform Operations:**
+2. **Perform Operations:**
    ```c++
    ImageTGA result = image1.multiply(image2);
    result.write("output/result.tga");
    ```
+
+ ## Features
+
+- **Image Input/Output:**
+- Read and write TGA images from files
+- **Pixel Manipulation:**
+- Add, subtract, multiply, and scale pixel values
+- Clamp pixel values within the valid range
+- **Image Operations:**
+- Add, subtract, multiply, and scale images
+- Apply blending modes like screen and overlay
+- Extract red, green, and blue color channels
+- Combine multiple images into a single output
+- Rotate images by 180 degrees
+- **Testing:**
+- Built-in test suite to verify results against expected outputs
+
 
 ## Examples
 
@@ -81,22 +77,13 @@ Run the included `tests()` function to verify that the library produces the expe
 
 ## Build and Run
 
-1. Make sure you have a C++ compiler installed (e.g., g++).
-2. Place your input TGA images in the `input/` directory.
-3. Compile the project:
-   ```bash
-   g++ main.cpp -o imageProcessor
-   ```
-4. Run the executable:
-   ```bash
-   ./imageProcessor
-   ```
-5. Check the `output/` directory for the results.
+1. Place your input TGA images in the `input/` directory.
+2. Compile the project:
+     ```bash
+     make build 
+     ```
+3. Run the executable:
+     ```bash
+     make run
+4. Observe output in `output/` directory.
 
-## Contributing
-
-Feel free to contribute by submitting pull requests with bug fixes, improvements, or new features.
-
-## License
-
-This project is licensed under the MIT License. See the `LICENSE` file for details.
